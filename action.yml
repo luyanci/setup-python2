@@ -2,11 +2,12 @@ name: setup-python2
 branding:
   icon: "cast"
   color: "blue"
-description: Reactivate your bilibili medal
+description: setup python2 by manual compile
 inputs:
   config_args:
     description: Add some extra argument for configure
     required: false
+    default: ""
 runs:
   using: composite
   steps:
