@@ -1,0 +1,45 @@
+name: setup-python2
+branding:
+  icon: "cast"
+  color: "blue"
+description: Reactivate your bilibili medal
+inputs:
+  config_args:
+    description: Add some extra argument for configure
+    required: false
+runs:
+  using: composite
+  steps:
+  - run: sudo apt-get install -y build-essential libncursesw5-dev libgdbm-dev libc6-dev zlib1g-dev libbz2-dev liblzma-dev libssl-dev libffi-dev
+  - run: echo "::group::Get & configure python2 source..."
+    shell: bash
+
+  - name: get python source
+    run: |
+      wget https://www.python.org/ftp/python/2.7.18/Python-2.7.18.tgz -O python.tar.gz
+      tar -xvf python.tar.gz
+    shell: bash
+
+  - name: configure
+    run: cd python-2.7.18 && ./configure --with-pydebug ${{inputs.config_args}}
+
+  - run: echo "::endgroup::"
+    shell: bash
+
+  - run: echo "::group::Compile&install..."
+    shell: bash
+  - name: Compile
+    run: |
+     cd python-2.7.18
+     make -j$(nproc)
+    shell: bash
+  - name: install
+    run: |
+     cd python-2.7.18
+     sudo make altinstall
+     sudo update-alternatives --install /usr/bin/python2 python2 /usr/local/bin/python2.7 1
+    shell: bash
+  - run: echo "::endgroup::"
+    shell: bash
+  - name: clean up...
+    run: rm -rf python-2.7.18
