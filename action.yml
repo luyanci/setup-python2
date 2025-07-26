@@ -1,6 +1,6 @@
 name: setup-python2
 branding:
-  icon: "cast"
+  icon: "play-circle"
   color: "blue"
 description: setup python2 by manual compile
 inputs:
