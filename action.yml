@@ -12,6 +12,7 @@ runs:
   using: composite
   steps:
   - run: sudo apt-get install -y build-essential libncursesw5-dev libgdbm-dev libc6-dev zlib1g-dev libbz2-dev liblzma-dev libssl-dev libffi-dev
+    shell: bash
   - run: echo "::group::Get & configure python2 source..."
     shell: bash
 
@@ -23,12 +24,14 @@ runs:
 
   - name: configure
     run: cd python-2.7.18 && ./configure --with-pydebug ${{inputs.config_args}}
+    shell: bash
 
   - run: echo "::endgroup::"
     shell: bash
 
   - run: echo "::group::Compile&install..."
     shell: bash
+
   - name: Compile
     run: |
      cd python-2.7.18
@@ -44,3 +47,4 @@ runs:
     shell: bash
   - name: clean up...
     run: rm -rf python-2.7.18
+    shell: bash
