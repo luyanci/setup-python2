@@ -46,5 +46,5 @@ runs:
   - run: echo "::endgroup::"
     shell: bash
   - name: clean up...
-    run: rm -rf Python-2.7.18
+    run: rm -rf Python-2.7.18 && rm python.tar.gz
     shell: bash
