@@ -13,38 +13,26 @@ runs:
   steps:
   - run: sudo apt-get install -y build-essential libncursesw5-dev libgdbm-dev libc6-dev zlib1g-dev libbz2-dev liblzma-dev libssl-dev libffi-dev
     shell: bash
-  - run: echo "::group::Get & configure python2 source..."
-    shell: bash
 
   - name: get python source
     run: |
-      wget https://www.python.org/ftp/python/2.7.18/Python-2.7.18.tgz -O python.tar.gz
-      tar -xvf python.tar.gz
+      echo "::group::Get & configure python2 source..."
+      wget https://www.python.org/ftp/python/2.7.18/Python-2.7.18.tgz -O python.tgz
+      tar -xvf python.tgz
+      echo "::endgroup::"
     shell: bash
 
-  - name: configure
-    run: cd Python-2.7.18 && ./configure --with-pydebug ${{inputs.config_args}}
-    shell: bash
-
-  - run: echo "::endgroup::"
-    shell: bash
-
-  - run: echo "::group::Compile&install..."
-    shell: bash
-
-  - name: Compile
+  - name: Compile & install
     run: |
+     echo "::group::Compile&install..."
      cd Python-2.7.18
-     make -j$(nproc)
-    shell: bash
-  - name: install
-    run: |
-     cd Python-2.7.18
-     sudo make altinstall
+     ./configure --with-pydebug ${{inputs.config_args}}
+     sudo make altinstall -j$(nproc)
      sudo update-alternatives --install /usr/bin/python2 python2 /usr/local/bin/python2.7 1
+     echo "::endgroup::"
     shell: bash
-  - run: echo "::endgroup::"
+  - run:
     shell: bash
   - name: clean up...
-    run: rm -rf Python-2.7.18 && rm python.tar.gz
+    run: rm -rf Python-2.7.18 && rm python.tgz
     shell: bash
