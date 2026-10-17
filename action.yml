@@ -25,6 +25,7 @@ runs:
   - name: Compile & install
     run: |
      echo "::group::Compile&install..."
+     export CFLAGS="-std=c17"
      cd Python-2.7.18
      ./configure --with-pydebug ${{inputs.config_args}}
      sudo make altinstall -j$(nproc)
