@@ -22,18 +22,49 @@ runs:
       echo "::endgroup::"
     shell: bash
 
-  - name: Compile & install
+  - name: Restore python2 cache
+    uses: actions/cache@v4
+    with:
+      path: .python2-cache
+      key: python2-2.7.18-${{ runner.os }}
+
+  - name: try restore cached install
     run: |
-     echo "::group::Compile&install..."
-     export CFLAGS="-std=c17"
-     cd Python-2.7.18
-     ./configure --with-pydebug ${{inputs.config_args}}
-     sudo make altinstall -j$(nproc)
-     sudo update-alternatives --install /usr/bin/python2 python2 /usr/local/bin/python2.7 1
-     echo "::endgroup::"
+      mkdir -p $GITHUB_WORKSPACE/.python2-cache
+      if [ -f $GITHUB_WORKSPACE/.python2-cache/python2.tgz ]; then
+        echo "::group::Restore cached python2..."
+        sudo tar -xzf $GITHUB_WORKSPACE/.python2-cache/python2.tgz -C /
+        sudo update-alternatives --install /usr/bin/python2 python2 /opt/python2.7-2.7.18/bin/python2.7 1 || true
+        touch $GITHUB_WORKSPACE/.python2-cache/installed
+        echo "::endgroup::"
+      else
+        echo "no cached python2 found"
+      fi
     shell: bash
-  - run:
+
+  - name: Compile & install (if no cache)
+    run: |
+     set -e
+     if [ -f $GITHUB_WORKSPACE/.python2-cache/installed ]; then
+       echo "Found cached installation — skipping build."
+     else
+       echo "::group::Compile&install..."
+       export CFLAGS="-std=c17"
+       cd Python-2.7.18
+       # install into /opt so we can cache the whole prefix
+       sudo mkdir -p /opt
+       ./configure --prefix=/opt/python2.7-2.7.18 --with-pydebug ${{inputs.config_args}}
+       sudo make -j$(nproc) install
+       # create workspace cache dir and tar the prefix for caching
+       mkdir -p $GITHUB_WORKSPACE/.python2-cache
+       sudo tar -czf $GITHUB_WORKSPACE/.python2-cache/python2.tgz -C / opt/python2.7-2.7.18
+       sudo chown $(whoami):$(whoami) $GITHUB_WORKSPACE/.python2-cache/python2.tgz || true
+       touch $GITHUB_WORKSPACE/.python2-cache/installed
+       sudo update-alternatives --install /usr/bin/python2 python2 /opt/python2.7-2.7.18/bin/python2.7 1
+       echo "::endgroup::"
+     fi
     shell: bash
+
   - name: clean up...
     run: rm -rf Python-2.7.18 && rm python.tgz
     shell: bash
